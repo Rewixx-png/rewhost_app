@@ -14,30 +14,22 @@ class ApiService {
   bool get isLoggedIn => _token != null && _token!.isNotEmpty;
 
   Future<void> login(String token) async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/user/dashboard'),
-        headers: {'X-Web-Access-Token': token},
-      );
+    final response = await http.get(
+      Uri.parse('$baseUrl/user/dashboard'),
+      headers: {'X-Web-Access-Token': token},
+    );
 
-      if (response.statusCode == 200) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('api_token', token);
-        _token = token;
-      } else {
-        // Пытаемся распарсить ошибку от сервера
-        String errorMsg = 'Ошибка ${response.statusCode}';
-        try {
-          final body = json.decode(utf8.decode(response.bodyBytes));
-          errorMsg = body['message'] ?? body['detail'] ?? errorMsg;
-        } catch (_) {
-          // Если это не JSON (например, HTML ошибка от Nginx)
-          errorMsg = 'Сервер вернул HTML или текст: ${response.body.substring(0, min(100, response.body.length))}...';
-        }
-        throw Exception(errorMsg);
-      }
-    } catch (e) {
-      throw Exception(e.toString().replaceAll('Exception: ', ''));
+    if (response.statusCode == 200) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('api_token', token);
+      _token = token;
+    } else {
+      String errorMsg = 'Ошибка ${response.statusCode}';
+      try {
+        final body = json.decode(utf8.decode(response.bodyBytes));
+        errorMsg = body['message'] ?? body['detail'] ?? errorMsg;
+      } catch (_) {}
+      throw Exception(errorMsg);
     }
   }
 
@@ -64,23 +56,50 @@ class ApiService {
       await logout();
       throw Exception('AUTH_EXPIRED');
     } else {
-      throw Exception('Error ${response.statusCode}: ${response.body}');
+      throw Exception('Error ${response.statusCode}');
     }
   }
 
-  Future<Map<String, dynamic>> getDashboard() async {
-    return await _get('/user/dashboard');
+  Future<dynamic> _post(String endpoint, [Map<String, dynamic>? body]) async {
+    if (_token == null) throw Exception('No token');
+
+    final response = await http.post(
+      Uri.parse('$baseUrl$endpoint'),
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Web-Access-Token': _token!,
+      },
+      body: body != null ? json.encode(body) : null,
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(utf8.decode(response.bodyBytes));
+    } else {
+      String msg = 'Error';
+      try { msg = json.decode(utf8.decode(response.bodyBytes))['detail']; } catch (_) {}
+      throw Exception(msg);
+    }
   }
 
-  Future<List<dynamic>> getAdminUsers() async {
-    final data = await _get('/admin/users');
-    return data['users'];
+  Future<dynamic> _delete(String endpoint) async {
+    if (_token == null) throw Exception('No token');
+    final response = await http.delete(
+      Uri.parse('$baseUrl$endpoint'),
+      headers: {'X-Web-Access-Token': _token!},
+    );
+    if (response.statusCode != 200) throw Exception('Delete failed');
+    return json.decode(utf8.decode(response.bodyBytes));
   }
 
-  Future<List<dynamic>> getAdminContainers() async {
-    final data = await _get('/admin/containers');
-    return data['containers'];
-  }
+  Future<Map<String, dynamic>> getDashboard() async => await _get('/user/dashboard');
+  Future<List<dynamic>> getAdminUsers() async => (await _get('/admin/users'))['users'];
+  Future<List<dynamic>> getAdminContainers() async => (await _get('/admin/containers'))['containers'];
+  Future<Map<String, dynamic>> getContainerDetails(int id) async => await _get('/user/container/$id');
   
-  int min(int a, int b) => a < b ? a : b;
+  Future<void> containerAction(int id, String action) async => await _post('/user/container/$id/action', {'action': action});
+  Future<void> renameContainer(int id, String newName) async => await _post('/user/container/$id/rename', {'new_name': newName});
+  Future<void> deleteContainer(int id) async => await _delete('/user/container/$id/delete');
+  Future<void> reinstallContainer(int id) async => await _post('/user/container/$id/reinstall/v2', {});
+
+  String getAvatarUrl(int userId) => '$baseUrl/public/user_photo/$userId';
 }
