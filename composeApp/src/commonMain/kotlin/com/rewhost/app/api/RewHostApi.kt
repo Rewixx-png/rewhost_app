@@ -77,6 +77,19 @@ class RewHostApi(
         }
     }
 
+    // --- НОВЫЕ МЕТОДЫ (FIX ОШИБОК) ---
+    suspend fun deleteContainer(id: Long) {
+        client.delete("$baseUrl/user/container/$id")
+    }
+
+    suspend fun reinstallContainer(id: Long) {
+        // Предполагаем, что это действие action="reinstall" или отдельный эндпоинт
+        // Если отдельный: client.post("$baseUrl/user/container/$id/reinstall")
+        // Используем универсальный action, если API поддерживает:
+        containerAction(id, "reinstall")
+    }
+    // --------------------------------
+
     suspend fun getSupportTickets(): List<SupportTicket> = get("/user/support/tickets")
     
     suspend fun getTicketMessages(id: Long): List<TicketMessage> = get("/user/support/ticket/$id/messages")
