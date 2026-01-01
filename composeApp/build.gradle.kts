@@ -9,9 +9,6 @@ plugins {
 }
 
 kotlin {
-    // Disable default hierarchy template to fix warnings/conflicts with manual configuration
-    applyDefaultHierarchyTemplate = false
-
     androidTarget {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_1_8)
