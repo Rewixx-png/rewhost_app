@@ -19,6 +19,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.rewhost.app.api.RewHostApi
 import com.rewhost.app.ui.components.GlassCard
 import com.rewhost.app.ui.screens.LoginScreen
+import com.rewhost.app.ui.screens.admin.AdminScreen
 import com.rewhost.app.ui.screens.support.SupportScreen
 import com.rewhost.app.ui.theme.ErrorRed
 import com.rewhost.app.ui.theme.TextGray
@@ -41,12 +42,10 @@ fun SettingsTab(api: RewHostApi) {
         item {
             SettingsGroup("Аккаунт") {
                 SettingsItem(Icons.Default.SupportAgent, "Поддержка") {
-                    navigator.push(SupportScreen()) // Теперь нативный экран!
+                    navigator.push(SupportScreen())
                 }
                 SettingsItem(Icons.Default.AdminPanelSettings, "Админ панель") {
-                    // Пока нет полноценной админки, но можно открыть список серверов
-                    // navigator.push(AdminServersScreen()) 
-                    // Для примера оставим пустым или тост
+                    navigator.push(AdminScreen())
                 }
             }
         }
