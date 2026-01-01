@@ -1,3 +1,4 @@
+
 package com.rewhost.app.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -7,7 +8,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-// Цветовая палитра (можно настроить под себя)
+// ТЕМНАЯ ТЕМА (Основная)
 private val DarkColorScheme = darkColorScheme(
     primary = Color(0xFFFFD700),       // Золотой
     secondary = Color(0xFF6C63FF),     // Фиолетовый
@@ -22,6 +23,7 @@ private val DarkColorScheme = darkColorScheme(
     error = Color(0xFFEF4444)
 )
 
+// СВЕТЛАЯ ТЕМА
 private val LightColorScheme = lightColorScheme(
     primary = Color(0xFFEAB308),
     secondary = Color(0xFF4F46E5),
@@ -40,9 +42,6 @@ fun RewHostTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    // В commonMain используем стандартные схемы.
-    // Если нужны Dynamic Colors (Material You), их нужно выносить в platform-specific код.
-    // Пока сделаем стабильную тему, которая работает везде.
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
     MaterialTheme(
