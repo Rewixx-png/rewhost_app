@@ -17,14 +17,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
@@ -53,6 +51,8 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.rewhost.app.api.RewHostApi
 import com.rewhost.app.data.model.DashboardResponse
 import com.rewhost.app.ui.components.GlassCard
+import com.rewhost.app.ui.components.IslandState
+import com.rewhost.app.ui.components.RewDynamicIsland
 import com.rewhost.app.ui.screens.LoginScreen
 import com.rewhost.app.ui.screens.dashboard.tabs.BotsTab
 import com.rewhost.app.ui.screens.dashboard.tabs.HomeTab
@@ -65,6 +65,8 @@ import com.rewhost.app.ui.theme.TextGray
 import com.rewhost.app.ui.theme.TextWhite
 import com.rewhost.app.utils.AppSettings
 import com.rewhost.app.utils.AppTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -80,25 +82,70 @@ class DashboardScreen : Screen {
         var data by remember { mutableStateOf<DashboardResponse?>(null) }
         var errorState by remember { mutableStateOf<String?>(null) }
         var selectedTab by remember { mutableStateOf(0) }
+        
+        // --- ISLAND STATE ---
+        var islandState by remember { mutableStateOf(IslandState.IDLE) }
+        var islandText by remember { mutableStateOf("System Normal") }
+        var islandSubText by remember { mutableStateOf("") }
+        // --------------------
+
         val scope = rememberCoroutineScope()
 
         fun loadData() {
             errorState = null
             scope.launch {
                 try {
-                    data = api.getDashboard()
+                    // Сначала показываем загрузку на острове
+                    islandState = IslandState.LOADING
+                    islandText = "Updating..."
+                    
+                    val dashboard = api.getDashboard()
+                    data = dashboard
+                    
+                    // Успех - остров в покой
+                    islandState = IslandState.IDLE
+                    islandText = "${dashboard.containers.count { it.status == "running" }} Bots Active"
+                    
                 } catch (e: Exception) {
                     if (e.message?.contains("401") == true || e.message?.contains("AUTH") == true) {
                         navigator.replace(LoginScreen())
                     } else {
                         errorState = e.message ?: "Unknown Error"
-                        e.printStackTrace()
+                        
+                        // Ошибка - остров краснеет
+                        islandState = IslandState.ALERT
+                        islandText = "Connection Error"
+                        islandSubText = "Tap to retry"
                     }
                 }
             }
         }
 
-        LaunchedEffect(Unit) { loadData() }
+        // Периодическое обновление статуса для острова (Каждые 30 сек)
+        LaunchedEffect(Unit) {
+            loadData() // Первая загрузка
+            while (isActive) {
+                delay(30_000)
+                try {
+                    val status = api.getServerStatus()
+                    // Если есть сервера с высокой нагрузкой -> ALERT
+                    val highLoadServer = status.data.find { 
+                        (it.cpu?.replace("%", "")?.toIntOrNull() ?: 0) > 80 
+                    }
+                    
+                    if (highLoadServer != null) {
+                        islandState = IslandState.ALERT
+                        islandText = "High Load: ${highLoadServer.name}"
+                        islandSubText = "CPU: ${highLoadServer.cpu}"
+                    } else if (islandState != IslandState.LOADING) {
+                        islandState = IslandState.IDLE
+                        islandText = "System Stable"
+                    }
+                } catch (_: Exception) {
+                    // Игнорим ошибки фонового опроса
+                }
+            }
+        }
 
         val bgColors = if (theme == AppTheme.LIGHT) {
             listOf(LightBackground, Color(0xFFE5E5EA))
@@ -107,82 +154,91 @@ class DashboardScreen : Screen {
         }
         val bgBrush = Brush.verticalGradient(colors = bgColors)
 
-        if (errorState != null) {
-            Box(
-                Modifier.fillMaxSize().background(bgBrush).padding(24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+        Box(Modifier.fillMaxSize().background(bgBrush)) {
+            // Контент экрана
+            if (errorState != null) {
+                // ... (Код ошибки оставил старый, он норм)
+                Box(
+                    Modifier.fillMaxSize().padding(24.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Warning, null, tint = ErrorRed, modifier = Modifier.size(56.dp))
-                    Spacer(Modifier.height(16.dp))
-                    Text("Ошибка загрузки", fontWeight = FontWeight.Bold, color = if(theme == AppTheme.LIGHT) Color.Black else TextWhite, fontSize = 22.sp)
-                    Spacer(Modifier.height(8.dp))
-                    
-                    GlassCard(modifier = Modifier.fillMaxWidth().clickable { clipboardManager.setText(AnnotatedString(errorState!!)) }) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                             Text(errorState!!, color = TextGray, fontSize = 13.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, textAlign = TextAlign.Center)
-                            Spacer(Modifier.height(8.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.ContentCopy, null, tint = RewPrimary, modifier = Modifier.size(14.dp))
-                                Spacer(Modifier.width(4.dp))
-                                Text("Нажми, чтобы скопировать", color = RewPrimary, fontSize = 11.sp)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(Icons.Default.Warning, null, tint = ErrorRed, modifier = Modifier.size(56.dp))
+                        Spacer(Modifier.height(16.dp))
+                        Text("Ошибка загрузки", fontWeight = FontWeight.Bold, color = if(theme == AppTheme.LIGHT) Color.Black else TextWhite, fontSize = 22.sp)
+                        Spacer(Modifier.height(8.dp))
+                        
+                        GlassCard(modifier = Modifier.fillMaxWidth().clickable { clipboardManager.setText(AnnotatedString(errorState!!)) }) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(errorState!!, color = TextGray, fontSize = 13.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, textAlign = TextAlign.Center)
+                            }
+                        }
+                        Spacer(Modifier.height(24.dp))
+                        Button(onClick = { loadData() }) { Text("Повторить") }
+                    }
+                }
+            } else if (data == null) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = RewPrimary)
+                }
+            } else {
+                val d = data!!
+                Scaffold(
+                    bottomBar = {
+                        // Сделал бар более "стеклянным"
+                        BottomAppBar(
+                            containerColor = Color(0xFF0F172A).copy(alpha = 0.8f),
+                            contentColor = TextGray,
+                            tonalElevation = 0.dp
+                        ) {
+                            val items = listOf(
+                                Triple("Главная", Icons.Default.Home, 0),
+                                Triple("Боты", Icons.Default.Dns, 1),
+                                Triple("Ещё", Icons.Default.Settings, 2)
+                            )
+                            items.forEach { (label, icon, idx) ->
+                                NavigationBarItem(
+                                    selected = selectedTab == idx,
+                                    onClick = { selectedTab = idx },
+                                    icon = { Icon(icon, null) },
+                                    label = { Text(label, fontSize = 10.sp, fontWeight = if (selectedTab == idx) FontWeight.Bold else FontWeight.Normal) },
+                                    colors = NavigationBarItemDefaults.colors(
+                                        selectedIconColor = TextWhite,
+                                        selectedTextColor = TextWhite,
+                                        indicatorColor = RewPrimary.copy(alpha = 0.2f),
+                                        unselectedIconColor = TextGray,
+                                        unselectedTextColor = TextGray
+                                    )
+                                )
                             }
                         }
                     }
-                    Spacer(Modifier.height(24.dp))
-                    Button(onClick = { loadData() }) { Text("Повторить") }
-                }
-            }
-            return
-        }
-
-        if (data == null) {
-            Box(Modifier.fillMaxSize().background(bgBrush), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = RewPrimary)
-            }
-            return
-        }
-
-        val d = data!!
-
-        Scaffold(
-            bottomBar = {
-                BottomAppBar(
-                    containerColor = Color(0xFF1E293B).copy(alpha = 0.95f),
-                    contentColor = TextGray
-                ) {
-                    val items = listOf(
-                        Triple("Главная", Icons.Default.Home, 0),
-                        Triple("Боты", Icons.Default.Dns, 1),
-                        Triple("Ещё", Icons.Default.Settings, 2)
-                    )
-                    items.forEach { (label, icon, idx) ->
-                        NavigationBarItem(
-                            selected = selectedTab == idx,
-                            onClick = { selectedTab = idx },
-                            icon = { Icon(icon, null) },
-                            label = { Text(label, fontSize = 10.sp, fontWeight = if (selectedTab == idx) FontWeight.Bold else FontWeight.Normal) },
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = TextWhite,
-                                selectedTextColor = TextWhite,
-                                indicatorColor = RewPrimary.copy(alpha = 0.2f),
-                                unselectedIconColor = TextGray,
-                                unselectedTextColor = TextGray
-                            )
-                        )
+                ) { padding ->
+                    Box(Modifier.fillMaxSize().padding(padding)) {
+                        when (selectedTab) {
+                            0 -> HomeTab(d, api)
+                            1 -> BotsTab(d.containers)
+                            2 -> SettingsTab(api)
+                        }
                     }
                 }
             }
-        ) { padding ->
-            Box(Modifier.fillMaxSize().background(bgBrush).padding(padding)) {
-                when (selectedTab) {
-                    0 -> HomeTab(d, api)
-                    1 -> BotsTab(d.containers)
-                    2 -> SettingsTab(api)
-                }
+
+            // --- DYNAMIC ISLAND OVERLAY ---
+            // Он всегда поверх всего контента
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 8.dp)
+            ) {
+                RewDynamicIsland(
+                    state = islandState,
+                    mainText = islandText,
+                    subText = islandSubText
+                )
             }
         }
     }
