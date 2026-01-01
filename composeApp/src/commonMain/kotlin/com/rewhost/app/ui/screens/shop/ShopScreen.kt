@@ -2,11 +2,8 @@ package com.rewhost.app.ui.screens.shop
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -44,15 +41,13 @@ class ShopScreen : Screen {
                 Text("Выберите тариф", color = TextGray, fontSize = 14.sp)
                 Spacer(Modifier.height(12.dp))
 
-                // Хардкод тарифов, так как в API purchaseTariff() без параметров, 
-                // скорее всего он покупает дефолтный или единственный доступный.
                 GlassCard(modifier = Modifier.fillMaxWidth().clickable { 
                     if (!isBuying) {
                         isBuying = true
                         scope.launch {
                             try {
-                                api.purchaseTariff() // Вызов API
-                                navigator.pop() // Возврат назад при успехе
+                                api.purchaseTariff()
+                                navigator.pop()
                             } catch (e: Exception) {
                                 isBuying = false
                             }
@@ -71,7 +66,7 @@ class ShopScreen : Screen {
                             CircularProgressIndicator(color = RewPrimary, modifier = Modifier.size(24.dp))
                         } else {
                             Button(
-                                onClick = { /* Обрабатывается кликом по карте */ }, 
+                                onClick = { /* handled by card click */ }, 
                                 colors = ButtonDefaults.buttonColors(containerColor = RewPrimary),
                                 contentPadding = PaddingValues(horizontal = 16.dp)
                             ) {
