@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -30,7 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight // !!! FIXED
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -39,6 +38,7 @@ import com.rewhost.app.data.model.Container
 import com.rewhost.app.ui.components.BouncyBtn
 import com.rewhost.app.ui.components.GlassCard
 import com.rewhost.app.ui.screens.ContainerDetailScreen
+import com.rewhost.app.ui.screens.shop.ShopScreen
 import com.rewhost.app.ui.theme.ErrorRed
 import com.rewhost.app.ui.theme.SuccessGreen
 import com.rewhost.app.ui.theme.TextGray
@@ -55,7 +55,9 @@ fun BotsTab(containers: List<Container>) {
                 Spacer(Modifier.height(16.dp))
                 Text("У вас нет активных ботов", color = TextGray)
                 Spacer(Modifier.height(16.dp))
-                Button(onClick = { navigator.push(com.rewhost.app.ui.screens.shop.ShopScreen()) }) { Text("Создать бота") } // Навигация на покупку будет позже
+                Button(onClick = { navigator.push(ShopScreen()) }) { 
+                    Text("Создать бота") 
+                }
             }
         }
         return
