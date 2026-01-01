@@ -55,7 +55,7 @@ fun BotsTab(containers: List<Container>) {
                 Spacer(Modifier.height(16.dp))
                 Text("У вас нет активных ботов", color = TextGray)
                 Spacer(Modifier.height(16.dp))
-                Button(onClick = {}) { Text("Создать бота") } // Навигация на покупку будет позже
+                Button(onClick = { navigator.push(com.rewhost.app.ui.screens.shop.ShopScreen()) }) { Text("Создать бота") } // Навигация на покупку будет позже
             }
         }
         return
