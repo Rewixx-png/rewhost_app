@@ -68,7 +68,6 @@ data class ContainerDetailScreen(val container: Container) : Screen {
                     Column(Modifier.padding(16.dp)) {
                         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                             Text("Status", color = TextGray)
-                            // FIX: Добавлена проверка на null (?.)
                             Text(
                                 currentContainer.status?.uppercase() ?: "UNKNOWN", 
                                 color = if(currentContainer.status == "running") SuccessGreen else ErrorRed,
@@ -110,7 +109,6 @@ data class ContainerDetailScreen(val container: Container) : Screen {
                                             else -> "restart"
                                         }
                                         api.containerAction(currentContainer.id, actionCmd)
-                                        // Update info
                                         currentContainer = api.getContainerDetails(currentContainer.id)
                                     } catch(_:Exception){}
                                     isLoading = false
@@ -141,7 +139,8 @@ data class ContainerDetailScreen(val container: Container) : Screen {
                         ActionRow("Переустановить", Icons.Default.Build, RewPrimary) {
                              scope.launch { try { api.reinstallContainer(currentContainer.id) } catch(_:Exception){} }
                         }
-                        HorizontalDivider(Modifier.padding(vertical=12.dp), color = Color.White.copy(alpha=0.1f))
+                        // Используем Spacer вместо HorizontalDivider, если нет функции
+                        Spacer(Modifier.height(12.dp).fillMaxWidth().background(Color.White.copy(alpha=0.1f)))
                         ActionRow("Удалить", Icons.Default.Delete, ErrorRed) {
                              scope.launch { 
                                  try { 
@@ -159,7 +158,7 @@ data class ContainerDetailScreen(val container: Container) : Screen {
     @Composable
     fun ActionRow(text: String, icon: ImageVector, color: Color, onClick: () -> Unit) {
         Row(
-            modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+            modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical=8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
