@@ -48,7 +48,7 @@ class SupportScreen : Screen {
         Scaffold(
             floatingActionButton = {
                 FloatingActionButton(
-                    onClick = { navigator.push(CreateTicketScreen()) }, // <--- ТЕПЕРЬ РАБОТАЕТ
+                    onClick = { navigator.push(CreateTicketScreen()) },
                     containerColor = RewPrimary
                 ) { Icon(Icons.Default.Add, null) }
             },
@@ -155,13 +155,106 @@ class CreateTicketScreen : Screen {
     }
 }
 
-// --- ЧАТ (Оставляем как был) ---
+// --- ЧАТ ТИКЕТА ---
 data class TicketChatScreen(val ticketId: Long, val title: String) : Screen {
-     @Composable
+    @Composable
     override fun Content() {
-        // ... (Код чата из предыдущего ответа, он рабочий) ...
-        // Скопируй сюда класс TicketChatScreen из моего прошлого сообщения
-         val navigator = LocalNavigator.currentOrThrow
-         Scaffold(containerColor = DarkBackground) { padding -> Text("Chat placeholder", Modifier.padding(padding)) }
+        val api = koinInject<RewHostApi>()
+        val navigator = LocalNavigator.currentOrThrow
+        var messages by remember { mutableStateOf<List<TicketMessage>>(emptyList()) }
+        var inputText by remember { mutableStateOf("") }
+        val listState = rememberLazyListState()
+        val scope = rememberCoroutineScope()
+
+        fun loadMessages() {
+            scope.launch {
+                try { messages = api.getTicketMessages(ticketId) } catch (_: Exception) {}
+            }
+        }
+
+        LaunchedEffect(Unit) {
+            loadMessages()
+            while(true) {
+                delay(5000)
+                loadMessages()
+            }
+        }
+
+        Scaffold(
+            bottomBar = {
+                GlassCard(modifier = Modifier.fillMaxWidth(), padding = 0.dp) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedTextField(
+                            value = inputText,
+                            onValueChange = { inputText = it },
+                            modifier = Modifier.weight(1f),
+                            placeholder = { Text("Сообщение...", color = TextGray) },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = TextWhite,
+                                unfocusedTextColor = TextWhite,
+                                focusedBorderColor = Color.Transparent,
+                                unfocusedBorderColor = Color.Transparent
+                            )
+                        )
+                        IconButton(onClick = {
+                            if (inputText.isNotBlank()) {
+                                scope.launch {
+                                    try {
+                                        api.replyToTicket(ticketId, mapOf("message" to inputText))
+                                        inputText = ""
+                                        loadMessages()
+                                    } catch (_: Exception) {}
+                                }
+                            }
+                        }) {
+                            Icon(Icons.Default.Send, null, tint = RewPrimary)
+                        }
+                    }
+                }
+            },
+            containerColor = DarkBackground
+        ) { padding ->
+            Column(Modifier.padding(padding)) {
+                Box(Modifier.fillMaxWidth().padding(16.dp)) {
+                    IconButton(onClick = { navigator.pop() }, modifier = Modifier.align(Alignment.CenterStart)) {
+                        Icon(Icons.Default.ArrowBack, null, tint = TextWhite)
+                    }
+                    Text(title, color = TextWhite, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.Center))
+                }
+
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                    reverseLayout = true
+                ) {
+                    items(messages.reversed()) { msg ->
+                        ChatBubble(msg)
+                        Spacer(Modifier.height(8.dp))
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun ChatBubble(msg: TicketMessage) {
+        val isMe = !msg.isAdmin
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = if (isMe) Alignment.CenterEnd else Alignment.CenterStart) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(
+                        topStart = 16.dp, topEnd = 16.dp,
+                        bottomStart = if (isMe) 16.dp else 4.dp,
+                        bottomEnd = if (isMe) 4.dp else 16.dp
+                    ))
+                    .background(if (isMe) RewPrimary else Color(0xFF334155))
+                    .padding(12.dp)
+            ) {
+                Text(msg.message, color = if (isMe) Color.Black else TextWhite)
+            }
+        }
     }
 }
