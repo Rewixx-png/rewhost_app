@@ -5,21 +5,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.rewhost.app.api.RewHostApi
 import com.rewhost.app.data.model.UserProfile
-import com.rewhost.app.ui.components.GlassCard
-import com.rewhost.app.ui.theme.*
 import org.koin.compose.koinInject
 
 class AdminScreen : Screen {
@@ -30,30 +25,24 @@ class AdminScreen : Screen {
         var users by remember { mutableStateOf<List<UserProfile>>(emptyList()) }
 
         LaunchedEffect(Unit) {
-            try { users = api.getAdminUsers(page = 0) } catch (_: Exception) {}
+            try { users = api.getAdminUsers(0) } catch (_: Exception) {}
         }
 
-        Scaffold(containerColor = DarkBackground) { padding ->
+        Scaffold { padding ->
             Column(Modifier.padding(padding).padding(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = { navigator.pop() }) { Icon(Icons.Default.ArrowBack, null, tint = TextWhite) }
-                    Text("Admin Panel", color = TextWhite, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    IconButton(onClick = { navigator.pop() }) { Icon(Icons.Default.ArrowBack, null) }
+                    Text("Admin Panel", style = MaterialTheme.typography.titleLarge)
                 }
                 Spacer(Modifier.height(16.dp))
                 
-                Text("Users List", color = RewPrimary, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.height(8.dp))
-
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    item { Text("Users", style = MaterialTheme.typography.titleMedium) }
                     items(users) { user ->
-                        GlassCard(modifier = Modifier.fillMaxWidth()) {
-                            Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Person, null, tint = TextGray)
-                                Spacer(Modifier.width(12.dp))
-                                Column {
-                                    Text(user.username ?: "ID: ${user.userId}", color = TextWhite, fontWeight = FontWeight.Bold)
-                                    Text("Bal: ${user.balance}", color = SuccessGreen, fontSize = 12.sp)
-                                }
+                        Card {
+                            Column(Modifier.padding(16.dp).fillMaxWidth()) {
+                                Text(user.username ?: "ID: ${user.userId}", style = MaterialTheme.typography.bodyLarge)
+                                Text("Balance: ${user.balance}", style = MaterialTheme.typography.bodyMedium)
                             }
                         }
                     }
