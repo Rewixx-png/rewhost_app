@@ -9,6 +9,9 @@ plugins {
 }
 
 kotlin {
+    // Disable default hierarchy template to fix warnings/conflicts with manual configuration
+    applyDefaultHierarchyTemplate = false
+
     androidTarget {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_1_8)
@@ -57,7 +60,7 @@ kotlin {
                 // Serialization
                 implementation(libs.kotlinx.serialization.json)
                 
-                // Coil (Images) - ВАЖНО
+                // Coil (Images)
                 implementation(libs.coil.compose)
                 implementation(libs.coil.network.ktor)
             }
@@ -68,6 +71,8 @@ kotlin {
                 implementation(compose.preview)
                 implementation(libs.androidx.activity.compose)
                 implementation(libs.ktor.client.okhttp)
+                // Add Koin for Android
+                implementation(libs.koin.android)
             }
         }
 
@@ -77,6 +82,11 @@ kotlin {
                 implementation(libs.ktor.client.darwin)
             }
         }
+        
+        // Link iOS targets to iosMain source set
+        val iosX64Main by getting { dependsOn(iosMain) }
+        val iosArm64Main by getting { dependsOn(iosMain) }
+        val iosSimulatorArm64Main by getting { dependsOn(iosMain) }
     }
 }
 
