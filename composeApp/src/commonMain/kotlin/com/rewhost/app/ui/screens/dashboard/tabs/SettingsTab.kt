@@ -19,6 +19,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.rewhost.app.api.RewHostApi
 import com.rewhost.app.ui.components.GlassCard
 import com.rewhost.app.ui.screens.LoginScreen
+import com.rewhost.app.ui.screens.ModulesScreen
 import com.rewhost.app.ui.screens.admin.AdminScreen
 import com.rewhost.app.ui.screens.support.SupportScreen
 import com.rewhost.app.ui.theme.ErrorRed
@@ -31,7 +32,6 @@ import org.koin.compose.koinInject
 @Composable
 fun SettingsTab(api: RewHostApi) {
     val navigator = LocalNavigator.currentOrThrow
-    val settings = koinInject<AppSettings>()
     val scope = rememberCoroutineScope()
 
     LazyColumn(contentPadding = PaddingValues(16.dp)) {
@@ -41,13 +41,17 @@ fun SettingsTab(api: RewHostApi) {
 
         item {
             SettingsGroup("Аккаунт") {
-                SettingsItem(Icons.Default.SupportAgent, "Поддержка") {
-                    navigator.push(SupportScreen())
-                }
-                SettingsItem(Icons.Default.AdminPanelSettings, "Админ панель") {
-                    navigator.push(AdminScreen())
-                }
+                SettingsItem(Icons.Default.SupportAgent, "Поддержка") { navigator.push(SupportScreen()) }
+                SettingsItem(Icons.Default.Save, "Мои модули") { navigator.push(ModulesScreen()) }
+                // Можно добавить экраны для Ключей и Промокодов аналогично
             }
+        }
+
+        item {
+             Spacer(Modifier.height(24.dp))
+             SettingsGroup("Admin") {
+                 SettingsItem(Icons.Default.AdminPanelSettings, "Админ панель") { navigator.push(AdminScreen()) }
+             }
         }
 
         item {
