@@ -1,6 +1,6 @@
 package com.rewhost.app.ui.screens
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -68,8 +68,9 @@ data class ContainerDetailScreen(val container: Container) : Screen {
                     Column(Modifier.padding(16.dp)) {
                         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                             Text("Status", color = TextGray)
+                            // FIX: Добавлена проверка на null (?.)
                             Text(
-                                currentContainer.status.uppercase(), 
+                                currentContainer.status?.uppercase() ?: "UNKNOWN", 
                                 color = if(currentContainer.status == "running") SuccessGreen else ErrorRed,
                                 fontWeight = FontWeight.Bold
                             )
