@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
@@ -54,7 +55,7 @@ import kotlin.math.max
 fun HomeTab(data: DashboardResponse, api: RewHostApi) {
     val navigator = LocalNavigator.currentOrThrow
     val profile = data.profile
-    val balanceStr = "%.2f".format(profile.balance)
+    val balanceStr = String.format("%.2f", profile.balance)
     val uriHandler = LocalUriHandler.current
     
     val level = profile.levelInfo?.level ?: 1
@@ -223,10 +224,11 @@ fun HomeTab(data: DashboardResponse, api: RewHostApi) {
                         }
                         Spacer(Modifier.height(12.dp))
                         LinearProgressIndicator(
-                            progress = progress,
+                            progress = { progress },
                             modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
                             color = RewPrimary,
                             trackColor = Color.White.copy(alpha = 0.1f),
+                            strokeCap = StrokeCap.Round
                         )
                         Spacer(Modifier.height(8.dp))
                         Text("$xp / $nextXp XP", color = TextGray, fontSize = 11.sp)

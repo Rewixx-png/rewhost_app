@@ -1,7 +1,7 @@
 package com.rewhost.app.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border // !!! FIXED
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,20 +11,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CreditCard
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign // !!! FIXED
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
@@ -39,12 +36,11 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 class FinanceScreen : Screen {
-    @OptIn(ExperimentalMaterial3Api::class) // !!! FIXED
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val api = koinInject<RewHostApi>()
-        val scope = rememberCoroutineScope()
         
         var selectedTab by remember { mutableStateOf(0) } 
         
@@ -54,7 +50,7 @@ class FinanceScreen : Screen {
                     title = { Text("Финансы", fontWeight = FontWeight.Bold) },
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
-                            Icon(Icons.Default.ArrowBack, null)
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
