@@ -20,9 +20,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Gamepad // <--- Добавили этот импорт
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.SupportAgent
+import androidx.compose.material.icons.filled.SupportAgent // <--- И этот
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
@@ -166,7 +167,11 @@ fun HomeTab(data: DashboardResponse, api: RewHostApi) {
                 // Кнопка Пополнить
                 BouncyBtn(onClick = { navigator.push(FinanceScreen()) }, modifier = Modifier.weight(1f)) {
                     Box(
-                        modifier = Modifier.height(50.dp).fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(RewPrimary),
+                        modifier = Modifier
+                            .height(50.dp)
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(RewPrimary),
                         contentAlignment = Alignment.Center
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -176,10 +181,14 @@ fun HomeTab(data: DashboardResponse, api: RewHostApi) {
                     }
                 }
                 
-                // Кнопка ИГРЫ (Новая)
+                // Кнопка ИГРЫ (Исправленная)
                 BouncyBtn(onClick = { navigator.push(com.rewhost.app.ui.screens.games.GamesScreen()) }, modifier = Modifier.weight(1f)) {
                     Box(
-                        modifier = Modifier.height(50.dp).fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0xFF8B5CF6)), // Purple for Games
+                        modifier = Modifier
+                            .height(50.dp)
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color(0xFF8B5CF6)), // Фиолетовый для игр
                         contentAlignment = Alignment.Center
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -192,7 +201,11 @@ fun HomeTab(data: DashboardResponse, api: RewHostApi) {
                 // Кнопка Поддержка (Маленькая)
                 BouncyBtn(onClick = { navigator.push(com.rewhost.app.ui.screens.support.SupportScreen()) }, modifier = Modifier.width(50.dp)) {
                      Box(
-                        modifier = Modifier.height(50.dp).fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0xFF334155)),
+                        modifier = Modifier
+                            .height(50.dp)
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color(0xFF334155)),
                         contentAlignment = Alignment.Center
                     ) {
                          Icon(Icons.Default.SupportAgent, null, tint = TextWhite, modifier = Modifier.size(20.dp))
