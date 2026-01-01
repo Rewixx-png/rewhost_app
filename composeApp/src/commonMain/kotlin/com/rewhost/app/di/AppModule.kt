@@ -2,7 +2,7 @@ package com.rewhost.app.di
 
 import com.rewhost.app.api.RewHostApi
 import com.rewhost.app.utils.AppSettings
-import com.russhwolf.settings.Settings
+import com.rewhost.app.utils.PlatformSettingsFactory
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
@@ -10,8 +10,8 @@ import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 
 val appModule = module {
-    // ВАЖНО: Используем полный путь к функции-фабрике com.russhwolf.settings.Settings()
-    single<Settings> { com.russhwolf.settings.Settings() }
+    // PlatformSettingsFactory предоставляется через платформо-специфичный модуль
+    single { get<PlatformSettingsFactory>().create() }
     
     single { AppSettings(get()) }
     
