@@ -55,7 +55,7 @@ import kotlin.math.max
 fun HomeTab(data: DashboardResponse, api: RewHostApi) {
     val navigator = LocalNavigator.currentOrThrow
     val profile = data.profile
-    val balanceStr = String.format("%.2f", profile.balance)
+    val balanceStr = formatMoney(profile.balance)
     val uriHandler = LocalUriHandler.current
     
     val level = profile.levelInfo?.level ?: 1
@@ -238,4 +238,14 @@ fun HomeTab(data: DashboardResponse, api: RewHostApi) {
             Spacer(Modifier.height(24.dp))
         }
     }
+}
+
+// Pure Kotlin formatted for commonMain compatibility
+private fun formatMoney(amount: Double): String {
+    val active = (amount * 100).toLong()
+    val whole = active / 100
+    val fraction = active % 100
+    // Ensure two digits for fraction part
+    val fractionStr = if (fraction < 10) "0$fraction" else "$fraction"
+    return "$whole.$fractionStr"
 }
