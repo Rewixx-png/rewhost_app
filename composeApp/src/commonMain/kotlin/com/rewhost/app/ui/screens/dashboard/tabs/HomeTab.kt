@@ -166,36 +166,36 @@ fun HomeTab(data: DashboardResponse, api: RewHostApi) {
                 // Кнопка Пополнить
                 BouncyBtn(onClick = { navigator.push(FinanceScreen()) }, modifier = Modifier.weight(1f)) {
                     Box(
-                        modifier = Modifier
-                            .height(50.dp)
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(RewPrimary),
+                        modifier = Modifier.height(50.dp).fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(RewPrimary),
                         contentAlignment = Alignment.Center
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Add, null, tint = Color.Black, modifier = Modifier.size(18.dp))
-                            Spacer(Modifier.width(8.dp))
-                            Text("Пополнить", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text("Пополнить", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp, modifier = Modifier.padding(start=4.dp))
                         }
                     }
                 }
                 
-                // Кнопка Поддержка
-                BouncyBtn(onClick = { uriHandler.openUri("https://rewhost.rewixx.ru/support") }, modifier = Modifier.weight(1f)) {
+                // Кнопка ИГРЫ (Новая)
+                BouncyBtn(onClick = { navigator.push(com.rewhost.app.ui.screens.games.GamesScreen()) }, modifier = Modifier.weight(1f)) {
                     Box(
-                        modifier = Modifier
-                            .height(50.dp)
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0xFF334155)),
+                        modifier = Modifier.height(50.dp).fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0xFF8B5CF6)), // Purple for Games
                         contentAlignment = Alignment.Center
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.SupportAgent, null, tint = TextWhite, modifier = Modifier.size(18.dp))
-                            Spacer(Modifier.width(8.dp))
-                            Text("Поддержка", color = TextWhite, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Icon(Icons.Default.Gamepad, null, tint = TextWhite, modifier = Modifier.size(18.dp))
+                            Text("Игры", color = TextWhite, fontWeight = FontWeight.Bold, fontSize = 12.sp, modifier = Modifier.padding(start=4.dp))
                         }
+                    }
+                }
+
+                // Кнопка Поддержка (Маленькая)
+                BouncyBtn(onClick = { navigator.push(com.rewhost.app.ui.screens.support.SupportScreen()) }, modifier = Modifier.width(50.dp)) {
+                     Box(
+                        modifier = Modifier.height(50.dp).fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0xFF334155)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                         Icon(Icons.Default.SupportAgent, null, tint = TextWhite, modifier = Modifier.size(20.dp))
                     }
                 }
             }
