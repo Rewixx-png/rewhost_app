@@ -53,8 +53,9 @@ class SupportScreen : Screen {
                     items(tickets) { ticket ->
                         Card(onClick = { navigator.push(TicketChatScreen(ticket.id, ticket.title)) }) {
                             Row(Modifier.padding(16.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text(ticket.title)
-                                if(ticket.unreadCount > 0) Badge { Text("${ticket.unreadCount}") }
+                                // Исправлено: text =
+                                Text(text = ticket.title)
+                                if(ticket.unreadCount > 0) Badge { Text(text = "${ticket.unreadCount}") }
                             }
                         }
                     }

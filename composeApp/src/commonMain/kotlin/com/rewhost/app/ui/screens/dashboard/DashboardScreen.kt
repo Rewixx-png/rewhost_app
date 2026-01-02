@@ -108,7 +108,7 @@ class DashboardScreen : Screen {
                 if (data != null) {
                     when (selectedTab) {
                         0 -> HomeTab(data!!, api)
-                        1 -> BotsTab(data!!.containers)
+                        1 -> BotsTab(data!!) // Передаем весь объект data, а не только containers
                         2 -> SettingsTab(api)
                     }
                 } else {
