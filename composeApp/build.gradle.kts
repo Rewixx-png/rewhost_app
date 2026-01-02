@@ -30,7 +30,7 @@ kotlin {
                 implementation(libs.ktor.client.core)
                 implementation(libs.ktor.client.content.negotiation)
                 implementation(libs.ktor.serialization.json)
-                implementation(libs.ktor.client.okhttp) // Перенес сюда для Android
+                implementation(libs.ktor.client.okhttp)
 
                 // Voyager
                 implementation(libs.voyager.navigator)
@@ -48,7 +48,7 @@ kotlin {
                 // Serialization
                 implementation(libs.kotlinx.serialization.json)
 
-                // Coil (Images)
+                // Coil
                 implementation(libs.coil.compose)
                 implementation(libs.coil.network.ktor)
             }
@@ -78,16 +78,32 @@ android {
         versionCode = 1
         versionName = "1.0"
     }
+
+    // --- НАСТРОЙКА ПОДПИСИ (НОВОЕ) ---
+    signingConfigs {
+        create("release") {
+            storeFile = file("rewhost.jks") // Имя файла, который мы создали
+            storePassword = "123456"      // Пароль из команды выше
+            keyAlias = "rewkey"           // Алиас из команды выше
+            keyPassword = "123456"        // Пароль ключа
+        }
+    }
+
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = false
+            // Применяем подпись к релизной сборке
+            signingConfig = signingConfigs.getByName("release")
+        }
+    }
+    // ---------------------------------
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
-        }
-    }
+    
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8

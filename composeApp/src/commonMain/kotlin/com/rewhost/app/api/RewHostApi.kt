@@ -11,7 +11,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonObject 
 import kotlinx.serialization.serializer
 
 class RewHostApi(
@@ -36,9 +36,15 @@ class RewHostApi(
     }
 
     private suspend inline fun <reified T> get(endpoint: String): T {
+        // Fix: jsonObject import added above
         return client.get("$baseUrl$endpoint").body<JsonObject>().let { json ->
-            val dataElement = json["data"] ?: json
-            jsonParser.decodeFromJsonElement(serializer<T>(), dataElement)
+            val dataElement = json["data"]
+            val dataToDecode = if (dataElement != null && dataElement !is kotlinx.serialization.json.JsonNull) {
+                dataElement
+            } else {
+                json
+            }
+            jsonParser.decodeFromJsonElement(serializer<T>(), dataToDecode)
         }
     }
 
@@ -71,9 +77,7 @@ class RewHostApi(
     suspend fun deleteContainer(id: Long) { client.delete("$baseUrl/user/container/$id/delete") }
     suspend fun reinstallContainer(id: Long) { client.post("$baseUrl/user/container/$id/reinstall/v2") }
     suspend fun renameContainer(id: Long, newName: String) {
-        client.post("$baseUrl/user/container/$id/rename") {
-            parameter("name", newName)
-        }
+        client.post("$baseUrl/user/container/$id/rename") { parameter("name", newName) }
     }
     suspend fun getContainerLogs(id: Long, lines: Int = 100): String = get("/user/container/$id/logs?lines=$lines")
 
@@ -83,6 +87,14 @@ class RewHostApi(
     suspend fun getSavedModules(): List<JsonObject> = get("/user/modules/saved")
     suspend fun sendSavedModules() { client.post("$baseUrl/user/modules/saved/send") }
     suspend fun deleteSavedModule(moduleId: Long) { client.delete("$baseUrl/user/modules/saved/$moduleId") }
+
+    // --- TOOLS (SOUNDCLOUD) ---
+    suspend fun downloadSoundCloud(url: String): JsonObject {
+        return client.post("$baseUrl/tools/soundcloud/download") {
+             contentType(ContentType.Application.Json)
+             setBody(mapOf("url" to url))
+        }.body()
+    }
 
     // --- KEYS ---
     suspend fun generateKey() { client.post("$baseUrl/user/keys/generate") }
@@ -146,6 +158,16 @@ class RewHostApi(
             contentType(ContentType.Application.Json)
             setBody(bet)
         }.body()
+    
+    // CRASH
+    suspend fun getCrashStatus(): GameState = get("/user/games/crash/status")
+    suspend fun placeCrashBet(amount: Double, autoCashout: Double = 2.0) {
+        client.post("$baseUrl/user/games/crash/bet") {
+            contentType(ContentType.Application.Json)
+            setBody(mapOf("amount" to amount, "auto_cashout" to autoCashout))
+        }
+    }
+    suspend fun cashoutCrash() { client.post("$baseUrl/user/games/crash/cashout") }
 
     // Blackjack
     suspend fun getBlackjackRooms(): List<JsonObject> = get("/games/blackjack/rooms")
@@ -167,8 +189,9 @@ class RewHostApi(
     // --- ADMIN ---
     suspend fun getAdminUsers(page: Int = 0): List<UserProfile> {
         val response = client.get("$baseUrl/admin/users") { parameter("page", page) }.body<JsonObject>()
-        val data = response["data"]?.jsonObject ?: response
-        return jsonParser.decodeFromJsonElement(AdminUsersResponse.serializer(), data).users
+        val data = response["data"]
+        val dataToDecode = if (data != null && data !is kotlinx.serialization.json.JsonNull) data else response
+        return jsonParser.decodeFromJsonElement(AdminUsersResponse.serializer(), dataToDecode).users
     }
     suspend fun getAdminServers(): List<JsonObject> = get("/admin/servers/")
     suspend fun toggleServer(id: String) { client.post("$baseUrl/admin/servers/$id/toggle") }

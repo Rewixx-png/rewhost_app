@@ -18,8 +18,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.rewhost.app.api.RewHostApi
 import com.rewhost.app.ui.components.GlassCard
-import com.rewhost.app.ui.screens.LoginScreen
-import com.rewhost.app.ui.screens.ModulesScreen
+import com.rewhost.app.ui.screens.*
 import com.rewhost.app.ui.screens.admin.AdminScreen
 import com.rewhost.app.ui.screens.support.SupportScreen
 import com.rewhost.app.ui.theme.ErrorRed
@@ -42,8 +41,9 @@ fun SettingsTab(api: RewHostApi) {
         item {
             SettingsGroup("Аккаунт") {
                 SettingsItem(Icons.Default.SupportAgent, "Поддержка") { navigator.push(SupportScreen()) }
-                SettingsItem(Icons.Default.Save, "Мои модули") { navigator.push(ModulesScreen()) }
-                // Можно добавить экраны для Ключей и Промокодов аналогично
+                SettingsItem(Icons.Default.Extension, "Сохраненные модули") { navigator.push(ModulesScreen()) }
+                SettingsItem(Icons.Default.Key, "API Ключи") { navigator.push(KeysScreen()) }
+                SettingsItem(Icons.Default.LocalOffer, "Промокоды") { navigator.push(PromosScreen()) }
             }
         }
 

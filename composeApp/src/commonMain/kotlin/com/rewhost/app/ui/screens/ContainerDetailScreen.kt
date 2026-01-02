@@ -128,6 +128,18 @@ data class ContainerDetailScreen(val container: Container) : Screen {
                         }
                     }
                 }
+
+                Spacer(Modifier.height(16.dp))
+                // Modules Button
+                Button(
+                    onClick = { navigator.push(ContainerModulesScreen(currentContainer.id)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Icon(Icons.Default.Extension, null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Модули контейнера")
+                }
                 
                 Spacer(Modifier.height(24.dp))
                 
@@ -140,9 +152,7 @@ data class ContainerDetailScreen(val container: Container) : Screen {
                         ActionRow("Переустановить", Icons.Default.Build, RewPrimary) {
                              scope.launch { try { api.reinstallContainer(currentContainer.id) } catch(_:Exception){} }
                         }
-                        // Используем Spacer для разделителя
                         Spacer(Modifier.height(1.dp).fillMaxWidth().background(Color.White.copy(alpha=0.1f)))
-                        
                         ActionRow("Удалить", Icons.Default.Delete, ErrorRed) {
                              scope.launch { 
                                  try { 
